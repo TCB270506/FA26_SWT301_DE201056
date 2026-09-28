@@ -1,4 +1,4 @@
-package lab2.account;
+package lab2.accountTest;
 
 public class AccountService {
     public static final int MAX_FAILED_ATTEMPTS = 5;

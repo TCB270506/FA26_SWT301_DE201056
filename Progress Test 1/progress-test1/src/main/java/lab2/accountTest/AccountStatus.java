@@ -1,4 +1,4 @@
-package lab2.account;
+package lab2.accountTest;
 
 /** Trạng thái quản trị của tài khoản (khóa do đăng nhập sai được lưu riêng bằng cờ locked trong Account). */
 public enum AccountStatus {

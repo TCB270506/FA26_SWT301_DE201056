@@ -1,4 +1,4 @@
-package lab2.account;
+package lab2.accountTest;
 
 import java.time.LocalDate;
 import java.time.Period;

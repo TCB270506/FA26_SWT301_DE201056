@@ -1,4 +1,4 @@
-package lab2.account;
+package lab2.accountTest;
 
 public enum ResultCode {
     SUCCESS,
