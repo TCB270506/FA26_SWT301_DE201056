@@ -30,7 +30,18 @@ public class AccountValidator {
         return true;
     }
 
+    public static boolean isValidPhone(String phone) {
+        return phone != null && PHONE.matcher(phone).matches();
+    }
+
+    public static boolean isValidEmail(String email) {
+        return email != null
+                && email.length() <= EMAIL_MAX_LENGTH
+                && EMAIL.matcher(email).matches();
+    }
+
     public static int calculateAge(LocalDate dob, LocalDate today) {
         return Period.between(dob, today).getYears();
     }
+
 }
