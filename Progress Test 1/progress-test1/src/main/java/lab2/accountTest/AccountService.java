@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 public class AccountService {
     public static final int MAX_FAILED_ATTEMPTS = 5;
@@ -67,6 +68,13 @@ public class AccountService {
         accountsByUsername.put(userKey, account);
         usernameByEmail.put(emailKey, userKey);
         return ResultCode.SUCCESS;
+    }
+
+    public Optional<Account> findByUsername(String username) {
+        if (isBlank(username)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(accountsByUsername.get(key(username)));
     }
 
     private static boolean isBlank(String s) { return s == null || s.isBlank(); }

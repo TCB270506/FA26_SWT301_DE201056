@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 public class AccountValidator {
 
+    private static final int EMAIL_MAX_LENGTH = 100;
+
     private static final Pattern USERNAME = Pattern.compile("^[A-Za-z][A-Za-z0-9_]{4,19}$");
     private static final Pattern EMAIL =
             Pattern.compile("^[A-Za-z0-9._%+-]+@(?:[A-Za-z0-9-]+\\.)+[A-Za-z]{2,}$");
