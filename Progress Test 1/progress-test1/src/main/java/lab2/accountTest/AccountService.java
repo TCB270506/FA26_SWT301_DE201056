@@ -5,20 +5,21 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+/** Nghiệp vụ quản lý tài khoản, lưu trong bộ nhớ (HashMap), không phụ thuộc thời gian thực trừ ngày hiện tại khi đăng ký. */
 public class AccountService {
+
     public static final int MAX_FAILED_ATTEMPTS = 5;
     public static final int PASSWORD_HISTORY_SIZE = 3;
     public static final int MIN_AGE = 18;
 
     private final Map<String, Account> accountsByUsername = new HashMap<>(); // key: username lowercase
     private final Map<String, String> usernameByEmail = new HashMap<>();     // email lowercase -> username key
+    private final Map<String, String> usernameByToken = new HashMap<>();     // token -> username key
+    private final Map<String, String> tokenByUsername = new HashMap<>();     // username key -> token hiện hành
 
-    public AccountService() { /* TODO: khởi tạo các Map */ }
-    public ResultCode unlockAccount(String username) { throw new UnsupportedOperationException("TODO"); }
-    // ... register, login, changePassword, requestPasswordReset, resetPassword,
-    //     disableAccount, findByUsername, isLocked như mục 5.3
-
+    // ================= Đăng ký =================
     public ResultCode register(String username, String email, String password,
                                String confirmPassword, LocalDate dateOfBirth, String phone) {
         LocalDate today = LocalDate.now();
@@ -70,13 +71,44 @@ public class AccountService {
         return ResultCode.SUCCESS;
     }
 
-    public Optional<Account> findByUsername(String username) {
-        if (isBlank(username)) {
-            return Optional.empty();
+    // ================= Đăng nhập =================
+    public ResultCode login(String username, String password) {
+        // BR-LOG-01
+        if (isBlank(username) || isBlank(password)) {
+            return ResultCode.INVALID_INPUT;
         }
-        return Optional.ofNullable(accountsByUsername.get(key(username)));
+        // BR-LOG-02, 03 (user không tồn tại)
+        Account account = accountsByUsername.get(key(username));
+        if (account == null) {
+            return ResultCode.INVALID_CREDENTIALS;
+        }
+        // BR-LOG-04
+        if (account.getStatus() == AccountStatus.DISABLED) {
+            return ResultCode.ACCOUNT_DISABLED;
+        }
+        // BR-LOG-06: đang khóa -> từ chối, không tăng bộ đếm
+        if (account.isLocked()) {
+            return ResultCode.ACCOUNT_LOCKED;
+        }
+        // BR-LOG-03, 05: sai mật khẩu
+        if (!PasswordHasher.matches(account.getSalt(), password, account.getCurrentPasswordHash())) {
+            account.incrementFailedAttempts();
+            if (account.getFailedAttempts() >= MAX_FAILED_ATTEMPTS) {
+                account.lock();
+                return ResultCode.ACCOUNT_LOCKED;
+            }
+            return ResultCode.INVALID_CREDENTIALS;
+        }
+        // BR-LOG-08
+        account.resetFailedAttempts();
+        return ResultCode.SUCCESS;
     }
 
-    private static boolean isBlank(String s) { return s == null || s.isBlank(); }
-    private static String key(String s)     { return s.toLowerCase(Locale.ROOT); }
+    private static boolean isBlank(String s) {
+        return s == null || s.isBlank();
+    }
+
+    private static String key(String s) {
+        return s.toLowerCase(Locale.ROOT);
+    }
 }
